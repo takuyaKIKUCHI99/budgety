@@ -80,6 +80,10 @@ const uiController = (() => {
         </div>`
         );
       }
+    },
+
+    deleteItem: function(target) {
+      target.parentNode.removeChild(target);
     }
   };
 })();
@@ -136,6 +140,15 @@ const controller = ((uiController, budgetController) => {
     uiController.displayBudget(budget);
     // Update item list
     uiController.addItemlist(newInputs);
+  });
+
+  // When delete button is clicked
+  dom.incomeListDOM.addEventListener("click", e => {
+    if (e.target.className === "ion-ios-close-outline") {
+      uiController.deleteItem(
+        e.target.parentNode.parentNode.parentNode.parentNode
+      );
+    }
   });
 
   return {
