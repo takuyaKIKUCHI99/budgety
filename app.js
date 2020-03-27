@@ -1,16 +1,20 @@
 // View module
 const uiController = (() => {
   // DOM
-  const budgeValue = document.querySelector(".budget__value");
-  const incomeValue = document.querySelector(".budget__income--value");
-  const expenseValue = document.querySelector(".budget__expenses--value");
+  const budgeValueDOM = document.querySelector(".budget__value");
+  const incomeValueDOM = document.querySelector(".budget__income--value");
+  const expenseValueDOM = document.querySelector(".budget__expenses--value");
+  const expensePercentageDOM = document.querySelector(
+    ".budget__expenses--percentage"
+  );
   const thisMonth = document.querySelector(".budget__title--month");
 
   return {
     updateBadget: function(args) {
-      budgeValue.textContent = args.budget;
-      incomeValue.textContent = args.income;
-      expenseValue.textContent = args.expense;
+      budgeValueDOM.textContent = args.budget;
+      incomeValueDOM.textContent = args.income;
+      expenseValueDOM.textContent = args.expense;
+      expensePercentageDOM.textContent = args.expensePercentage;
     },
     displayMonth: function() {
       const today = new Date();
@@ -51,7 +55,8 @@ const controller = ((uiController, budgetController) => {
       uiController.updateBadget({
         budget: 0,
         income: 0,
-        expense: 0
+        expense: 0,
+        expensePercentage: "---"
       });
       uiController.displayMonth();
     }
