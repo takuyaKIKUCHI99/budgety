@@ -49,14 +49,14 @@ const uiController = (() => {
       },  ${today.getFullYear()}`;
     },
 
-    addItemlist: function(newInputs) {
-      if (newInputs.type === "inc") {
+    addItemlist: function(newItem) {
+      if (newItem.type === "inc") {
         dom.incomeListDOM.insertAdjacentHTML(
           "beforeend",
-          `<div class="item clearfix" id="income-0">
-          <div class="item__description">${newInputs.description}</div>
+          `<div class="item clearfix" id="income-${newItem.id}">
+          <div class="item__description">${newItem.description}</div>
           <div class="right clearfix">
-            <div class="item__value">+ ${newInputs.value}</div>
+            <div class="item__value">+ ${newItem.value}</div>
             <div class="item__delete">
               <button class="item__delete--btn">
                 <i class="ion-ios-close-outline"></i>
@@ -65,13 +65,13 @@ const uiController = (() => {
           </div>
         </div>`
         );
-      } else if (newInputs.type === "exp") {
+      } else if (newItem.type === "exp") {
         dom.expenseListDOM.insertAdjacentHTML(
           "beforeend",
-          `<div class="item clearfix" id="expense-0">
-          <div class="item__description">${newInputs.description}</div>
+          `<div class="item clearfix" id="expense-${newItem.id}">
+          <div class="item__description">${newItem.description}</div>
           <div class="right clearfix">
-            <div class="item__value">- ${newInputs.value}</div>
+            <div class="item__value">- ${newItem.value}</div>
             <div class="item__percentage">21%</div>
             <div class="item__delete">
               <button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button>
@@ -90,36 +90,62 @@ const uiController = (() => {
 
 // Budget model
 const budgetController = (() => {
+  const Item = function(args) {
+    this.id = lastID + 1;
+    this.type = args.type;
+    this.value = args.value;
+    this.description = args.description;
+    updateLastID();
+  };
+
+  let lastID = 0;
+  function updateLastID() {
+    lastID++;
+  }
+
+  const booking = [];
   const financialData = {
+    budget: 0,
     income: 0,
     expense: 0,
-    budget: 0,
     expensePercentage: -1
   };
 
-  function calcurateBudget() {
-    financialData.budget = financialData.income - financialData.expense;
-  }
+  function calcurateFinancialData() {
+    let income = 0;
+    let expense = 0;
+    booking.forEach(item => {
+      item.type === "inc" ? (income += item.value) : (expense += item.value);
+    });
 
-  function calcuratePercentage() {
-    financialData.expensePercentage =
-      (financialData.expense / financialData.income) * 100;
-  }
-
-  function updateFinancialData(newInputs) {
-    if (newInputs.type === "inc") {
-      financialData.income += newInputs.value;
-    } else if (newInputs.type === "exp") {
-      financialData.expense += newInputs.value;
-    }
-    calcurateBudget();
-    calcuratePercentage();
+    financialData.income = income;
+    financialData.expense = expense;
+    financialData.budget = income - expense;
+    financialData.expensePercentage = (expense / income) * 100;
   }
 
   return {
-    calcurateBudget: function(newInputs) {
-      updateFinancialData(newInputs);
+    addToBooking: function(newInputs) {
+      const newItem = new Item(newInputs);
+      booking.push(newItem);
+      return newItem;
+    },
+
+    removeFromBooking: function(id) {
+      const index = booking.findIndex(item => {
+        return item.id === parseInt(id);
+      });
+      booking.splice(index, 1);
+    },
+
+    getBudget: function() {
+      calcurateFinancialData();
       return financialData;
+    },
+
+    test: {
+      booking,
+      financialData
     }
   };
 })();
@@ -136,18 +162,23 @@ const controller = ((uiController, budgetController) => {
       value: parseFloat(dom.addValueDOM.value)
     };
     // Calcurate and update budget
-    const budget = budgetController.calcurateBudget(newInputs);
+    const newItem = budgetController.addToBooking(newInputs);
+    const budget = budgetController.getBudget();
     uiController.displayBudget(budget);
     // Update item list
-    uiController.addItemlist(newInputs);
+    uiController.addItemlist(newItem);
   });
 
   // When delete button is clicked
   dom.incomeListDOM.addEventListener("click", e => {
     if (e.target.className === "ion-ios-close-outline") {
-      uiController.deleteItem(
-        e.target.parentNode.parentNode.parentNode.parentNode
-      );
+      // Calcurate budget and display them
+      const targetNode = e.target.parentNode.parentNode.parentNode.parentNode;
+      budgetController.removeFromBooking(targetNode.id.split("-")[1]);
+      const budget = budgetController.getBudget();
+      uiController.displayBudget(budget);
+      // Removing the target item from UI
+      uiController.deleteItem(targetNode);
     }
   });
 
