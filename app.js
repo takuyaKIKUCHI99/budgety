@@ -86,9 +86,37 @@ const uiController = (() => {
 
 // Budget model
 const budgetController = (() => {
-  const data = {
+  const financialData = {
     income: 0,
-    expense: 0
+    expense: 0,
+    budget: 0,
+    expensePercentage: -1
+  };
+
+  function calcurateBudget() {
+    financialData.budget = financialData.income - financialData.expense;
+  }
+
+  function calcuratePercentage() {
+    financialData.expensePercentage =
+      (financialData.expense / financialData.income) * 100;
+  }
+
+  function updateFinancialData(newInputs) {
+    if (newInputs.type === "inc") {
+      financialData.income += newInputs.value;
+    } else if (newInputs.type === "exp") {
+      financialData.expense += newInputs.value;
+    }
+    calcurateBudget();
+    calcuratePercentage();
+  }
+
+  return {
+    calcurateBudget: function(newInputs) {
+      updateFinancialData(newInputs);
+      return financialData;
+    }
   };
 })();
 
@@ -103,6 +131,9 @@ const controller = ((uiController, budgetController) => {
       description: dom.addDescriptionDOM.value,
       value: parseFloat(dom.addValueDOM.value)
     };
+    // Calcurate and update budget
+    const budget = budgetController.calcurateBudget(newInputs);
+    uiController.displayBudget(budget);
     // Update item list
     uiController.addItemlist(newInputs);
   });
