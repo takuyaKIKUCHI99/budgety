@@ -1,21 +1,33 @@
 // View module
 const uiController = (() => {
   // DOM
-  const budgeValueDOM = document.querySelector(".budget__value");
-  const incomeValueDOM = document.querySelector(".budget__income--value");
-  const expenseValueDOM = document.querySelector(".budget__expenses--value");
-  const expensePercentageDOM = document.querySelector(
-    ".budget__expenses--percentage"
-  );
-  const thisMonth = document.querySelector(".budget__title--month");
+  const dom = {
+    budgeValueDOM: document.querySelector(".budget__value"),
+    incomeValueDOM: document.querySelector(".budget__income--value"),
+    expenseValueDOM: document.querySelector(".budget__expenses--value"),
+    expensePercentageDOM: document.querySelector(
+      ".budget__expenses--percentage"
+    ),
+    thisMonthDOM: document.querySelector(".budget__title--month"),
+    addTypeDOM: document.querySelector(".add__type"),
+    addDescriptionDOM: document.querySelector(".add__description"),
+    addValueDOM: document.querySelector(".add__value"),
+    addButtonDOM: document.querySelector(".add__btn"),
+    incomeListDOM: document.querySelector(".income__list"),
+    expenseListDOM: document.querySelector(".expenses__list")
+  };
 
+  // Exposed
   return {
-    updateBadget: function(args) {
-      budgeValueDOM.textContent = args.budget;
-      incomeValueDOM.textContent = args.income;
-      expenseValueDOM.textContent = args.expense;
-      expensePercentageDOM.textContent = args.expensePercentage;
+    dom,
+
+    displayBudget: function(args) {
+      dom.budgeValueDOM.textContent = args.budget;
+      dom.incomeValueDOM.textContent = args.income;
+      dom.expenseValueDOM.textContent = args.expense;
+      dom.expensePercentageDOM.textContent = args.expensePercentage;
     },
+
     displayMonth: function() {
       const today = new Date();
       const months = [
@@ -32,9 +44,42 @@ const uiController = (() => {
         "November",
         "December"
       ];
-      thisMonth.textContent = `${
+      dom.thisMonthDOM.textContent = `${
         months[today.getMonth()]
       },  ${today.getFullYear()}`;
+    },
+
+    addItemlist: function(newInputs) {
+      if (newInputs.type === "inc") {
+        dom.incomeListDOM.insertAdjacentHTML(
+          "beforeend",
+          `<div class="item clearfix" id="income-0">
+          <div class="item__description">${newInputs.description}</div>
+          <div class="right clearfix">
+            <div class="item__value">+ ${newInputs.value}</div>
+            <div class="item__delete">
+              <button class="item__delete--btn">
+                <i class="ion-ios-close-outline"></i>
+              </button>
+            </div>
+          </div>
+        </div>`
+        );
+      } else if (newInputs.type === "exp") {
+        dom.expenseListDOM.insertAdjacentHTML(
+          "beforeend",
+          `<div class="item clearfix" id="expense-0">
+          <div class="item__description">${newInputs.description}</div>
+          <div class="right clearfix">
+            <div class="item__value">- ${newInputs.value}</div>
+            <div class="item__percentage">21%</div>
+            <div class="item__delete">
+              <button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button>
+            </div>
+          </div>
+        </div>`
+        );
+      }
     }
   };
 })();
@@ -49,10 +94,24 @@ const budgetController = (() => {
 
 // Controller
 const controller = ((uiController, budgetController) => {
+  const dom = uiController.dom;
+
+  // When Check button is clicked
+  dom.addButtonDOM.addEventListener("click", () => {
+    const newInputs = {
+      type: dom.addTypeDOM.value,
+      description: dom.addDescriptionDOM.value,
+      value: parseFloat(dom.addValueDOM.value)
+    };
+    // Update item list
+    uiController.addItemlist(newInputs);
+  });
+
   return {
+    // Initial display arragement
     init: function() {
       console.log("Initialized");
-      uiController.updateBadget({
+      uiController.displayBudget({
         budget: 0,
         income: 0,
         expense: 0,
