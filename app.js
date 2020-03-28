@@ -25,7 +25,7 @@ const uiController = (() => {
   }
 
   function percentageFormatter(number) {
-    return `${Math.round(number)}%`;
+    return `${Math.floor(number)}%`;
   }
 
   // Exposed
@@ -69,7 +69,7 @@ const uiController = (() => {
           `<div class="item clearfix" id="income-${newItem.id}">
           <div class="item__description">${newItem.description}</div>
           <div class="right clearfix">
-            <div class="item__value">+ ${newItem.value}</div>
+            <div class="item__value">+ ${numberFormatter(newItem.value)}</div>
             <div class="item__delete">
               <button class="item__delete--btn">
                 <i class="ion-ios-close-outline"></i>
@@ -84,7 +84,7 @@ const uiController = (() => {
           `<div class="item clearfix" id="expense-${newItem.id}">
           <div class="item__description">${newItem.description}</div>
           <div class="right clearfix">
-            <div class="item__value">- ${newItem.value}</div>
+            <div class="item__value">- ${numberFormatter(newItem.value)}</div>
             <div class="item__percentage">21%</div>
             <div class="item__delete">
               <button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button>
