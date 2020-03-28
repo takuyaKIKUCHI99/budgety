@@ -128,6 +128,15 @@ const uiController = (() => {
         target.classList.toggle("red-focus");
       });
       dom.addButtonDOM.classList.toggle("red");
+    },
+
+    // Get inputs values
+    getInputs: function() {
+      return {
+        type: dom.addTypeDOM.value,
+        description: dom.addDescriptionDOM.value,
+        value: dom.addValueDOM.value
+      };
     }
   };
 })();
@@ -195,11 +204,7 @@ const controller = ((uiController, budgetController) => {
   // Event when Check button is clicked
   dom.addButtonDOM.addEventListener("click", () => {
     // Getting values from DOM input
-    const newInputs = {
-      type: dom.addTypeDOM.value,
-      description: dom.addDescriptionDOM.value,
-      value: dom.addValueDOM.value
-    };
+    const newInputs = uiController.getInputs();
     // Calcurate and update budget
     budgetController.addToBooking(newInputs);
     const budget = budgetController.getTotals();
