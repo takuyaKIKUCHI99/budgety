@@ -137,6 +137,12 @@ const uiController = (() => {
         description: dom.addDescriptionDOM.value,
         value: dom.addValueDOM.value
       };
+    },
+
+    clearInputs: function() {
+      dom.addDescriptionDOM.value = "";
+      dom.addValueDOM.value = "";
+      dom.addDescriptionDOM.focus();
     }
   };
 })();
@@ -212,6 +218,8 @@ const controller = ((uiController, budgetController) => {
     // Update item list
     const booking = budgetController.getBooking();
     uiController.displayItems(booking);
+    // Clearing input fields
+    uiController.clearInputs();
   });
 
   function deleteListItem(e) {
