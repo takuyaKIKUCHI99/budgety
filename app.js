@@ -40,7 +40,7 @@ const uiController = (() => {
   }
 
   return {
-    dom,
+    getDOMstrings: () => dom,
     // Display financial data in top banner
     displayBudget: function(args) {
       dom.budgetValueDOM.textContent = moneyFormatter(
@@ -205,7 +205,7 @@ const budgetController = (() => {
 // ----------------- Controller -----------------------
 const controller = ((uiController, budgetController) => {
   // Getting DOM strings from UI controller
-  const dom = uiController.dom;
+  const dom = uiController.getDOMstrings();
 
   // Event when Check button is clicked
   dom.addButtonDOM.addEventListener("click", () => {
