@@ -208,9 +208,10 @@ const controller = ((uiController, budgetController) => {
   const dom = uiController.getDOMstrings();
 
   // Event when Check button is clicked
-  dom.addButtonDOM.addEventListener("click", () => {
+  function addListItem() {
     // Getting values from DOM input
     const newInputs = uiController.getInputs();
+    if (!newInputs.description || !newInputs.value) return;
     // Calcurate and update budget
     budgetController.addToBooking(newInputs);
     const budget = budgetController.getTotals();
@@ -220,7 +221,7 @@ const controller = ((uiController, budgetController) => {
     uiController.displayItems(booking);
     // Clearing input fields
     uiController.clearInputs();
-  });
+  }
 
   function deleteListItem(e) {
     if (e.target.className === "ion-ios-close-outline") {
@@ -234,10 +235,16 @@ const controller = ((uiController, budgetController) => {
       uiController.displayItems(booking);
     }
   }
-  // When delete button is clicked
+
+  // Event listner
+  // Add item
+  dom.addButtonDOM.addEventListener("click", addListItem);
+  window.addEventListener("keyup", e => {
+    if (e.keyCode === 13) addListItem;
+  });
+  // Delete item
   dom.incomeListDOM.addEventListener("click", e => deleteListItem(e));
   dom.expenseListDOM.addEventListener("click", e => deleteListItem(e));
-
   // Changing color of inputs field for income and expense
   dom.addTypeDOM.addEventListener("change", () => {
     uiController.inputColorChange();
