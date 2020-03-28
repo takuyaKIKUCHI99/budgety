@@ -1,8 +1,8 @@
 // ------------------ View module ----------------------
 const uiController = (() => {
-  // DOM
+  // All DOM strings used in this app
   const dom = {
-    budgeValueDOM: document.querySelector(".budget__value"),
+    budgetValueDOM: document.querySelector(".budget__value"),
     incomeValueDOM: document.querySelector(".budget__income--value"),
     expenseValueDOM: document.querySelector(".budget__expenses--value"),
     expensePercentageDOM: document.querySelector(
@@ -17,34 +17,43 @@ const uiController = (() => {
     expenseListDOM: document.querySelector(".expenses__list")
   };
 
-  function numberFormatter(number) {
+  // Formatting in JPY
+  function moneyFormatter(number) {
     return new Intl.NumberFormat("ja-JP", {
       style: "currency",
       currency: "JPY"
     }).format(number);
   }
 
+  // Formatting percentages
   function percentageFormatter(divided, division) {
     if (division < 1) return "---";
     return `${Math.floor((divided / division) * 100)}%`;
   }
 
-  // Exposed
+  function clearItems() {
+    [dom.incomeListDOM, dom.expenseListDOM].forEach(element => {
+      while (element.firstChild) {
+        element.removeChild(element.firstChild);
+      }
+    });
+  }
+
   return {
     dom,
-
+    // Display financial data in top banner
     displayBudget: function(args) {
-      dom.budgeValueDOM.textContent = numberFormatter(
+      dom.budgetValueDOM.textContent = moneyFormatter(
         args.income - args.expense
       );
-      dom.incomeValueDOM.textContent = numberFormatter(args.income);
-      dom.expenseValueDOM.textContent = numberFormatter(args.expense);
+      dom.incomeValueDOM.textContent = moneyFormatter(args.income);
+      dom.expenseValueDOM.textContent = moneyFormatter(args.expense);
       dom.expensePercentageDOM.textContent = percentageFormatter(
         args.expense,
         args.income
       );
     },
-
+    // Display current month in top banner
     displayMonth: function() {
       const today = new Date();
       const months = [
@@ -65,8 +74,10 @@ const uiController = (() => {
         months[today.getMonth()]
       },  ${today.getFullYear()}`;
     },
-
+    // Display each financial items
     displayItems: function(booking) {
+      // Clearing financial items first
+      clearItems();
       booking.forEach(item => {
         if (item.type === "inc") {
           dom.incomeListDOM.insertAdjacentHTML(
@@ -74,7 +85,7 @@ const uiController = (() => {
             `<div class="item clearfix" id="income-${item.id}">
           <div class="item__description">${item.description}</div>
           <div class="right clearfix">
-            <div class="item__value">+ ${numberFormatter(item.value)}</div>
+            <div class="item__value">+ ${moneyFormatter(item.value)}</div>
             <div class="item__delete">
               <button class="item__delete--btn">
                 <i class="ion-ios-close-outline"></i>
@@ -92,7 +103,7 @@ const uiController = (() => {
             `<div class="item clearfix" id="expense-${item.id}">
           <div class="item__description">${item.description}</div>
           <div class="right clearfix">
-            <div class="item__value">- ${numberFormatter(item.value)}</div>
+            <div class="item__value">- ${moneyFormatter(item.value)}</div>
             <div class="item__percentage">${percentageFormatter(
               item.value,
               income
@@ -106,17 +117,8 @@ const uiController = (() => {
         }
       });
     },
-
-    clearItems: function() {
-      [dom.incomeListDOM, dom.expenseListDOM].forEach(element => {
-        while (element.firstChild) {
-          element.removeChild(element.firstChild);
-        }
-      });
-    },
-
+    // Changing input color between income and expense
     inputColorChange: function() {
-      console.log("inside");
       const targetfields = [
         dom.addTypeDOM,
         dom.addDescriptionDOM,
@@ -132,8 +134,10 @@ const uiController = (() => {
 
 // ---------------------- Budget model ------------------------
 const budgetController = (() => {
-  // Each items in booking
+  // Array for each Item
   const booking = [];
+
+  // Creating new Item when input is submitted
   const Item = function(args) {
     this.id = lastID + 1;
     this.type = args.type;
@@ -141,13 +145,14 @@ const budgetController = (() => {
     this.description = args.description;
     updateLastID();
   };
-
+  // Incrementing ID
   let lastID = 0;
   function updateLastID() {
     lastID++;
   }
 
-  function calcurateFinancialData() {
+  // Returing total income and expense from items in booking
+  function calcuratingTotals() {
     let income = 0;
     let expense = 0;
 
@@ -162,11 +167,13 @@ const budgetController = (() => {
   }
 
   return {
+    // Adding new Item to booking
     addToBooking: function(newInputs) {
       const newItem = new Item(newInputs);
       booking.push(newItem);
     },
 
+    // Removing Item from booking
     removeFromBooking: function(id) {
       const index = booking.findIndex(item => {
         return item.id === parseInt(id);
@@ -174,23 +181,20 @@ const budgetController = (() => {
       booking.splice(index, 1);
     },
 
-    getBudget: function() {
-      const financialData = calcurateFinancialData();
-      return financialData;
-    },
+    getTotals: () => calcuratingTotals(),
 
-    getBooking: function() {
-      return booking;
-    }
+    getBooking: () => booking
   };
 })();
 
 // ----------------- Controller -----------------------
 const controller = ((uiController, budgetController) => {
+  // Getting DOM strings from UI controller
   const dom = uiController.dom;
 
-  // When Check button is clicked
+  // Event when Check button is clicked
   dom.addButtonDOM.addEventListener("click", () => {
+    // Getting values from DOM input
     const newInputs = {
       type: dom.addTypeDOM.value,
       description: dom.addDescriptionDOM.value,
@@ -198,11 +202,10 @@ const controller = ((uiController, budgetController) => {
     };
     // Calcurate and update budget
     budgetController.addToBooking(newInputs);
-    const budget = budgetController.getBudget();
+    const budget = budgetController.getTotals();
     uiController.displayBudget(budget);
     // Update item list
     const booking = budgetController.getBooking();
-    uiController.clearItems();
     uiController.displayItems(booking);
   });
 
@@ -211,11 +214,10 @@ const controller = ((uiController, budgetController) => {
       // Calcurate budget and display them
       const targetNode = e.target.parentNode.parentNode.parentNode.parentNode;
       budgetController.removeFromBooking(targetNode.id.split("-")[1]);
-      const budget = budgetController.getBudget();
+      const budget = budgetController.getTotals();
       uiController.displayBudget(budget);
       // Update item list
       const booking = budgetController.getBooking();
-      uiController.clearItems();
       uiController.displayItems(booking);
     }
   }
@@ -223,6 +225,7 @@ const controller = ((uiController, budgetController) => {
   dom.incomeListDOM.addEventListener("click", e => deleteListItem(e));
   dom.expenseListDOM.addEventListener("click", e => deleteListItem(e));
 
+  // Changing color of inputs field for income and expense
   dom.addTypeDOM.addEventListener("change", () => {
     uiController.inputColorChange();
   });
