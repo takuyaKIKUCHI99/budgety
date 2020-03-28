@@ -96,7 +96,7 @@ const uiController = (() => {
           );
         } else if (item.type === "exp") {
           const income = parseInt(
-            dom.incomeValueDOM.textContent.replace("￥", "")
+            dom.incomeValueDOM.textContent.replace(/[￥,]/g, "")
           );
           dom.expenseListDOM.insertAdjacentHTML(
             "beforeend",
