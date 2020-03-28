@@ -17,15 +17,28 @@ const uiController = (() => {
     expenseListDOM: document.querySelector(".expenses__list")
   };
 
+  function numberFormatter(number) {
+    return new Intl.NumberFormat("ja-JP", {
+      style: "currency",
+      currency: "JPY"
+    }).format(number);
+  }
+
+  function percentageFormatter(number) {
+    return `${Math.round(number)}%`;
+  }
+
   // Exposed
   return {
     dom,
 
     displayBudget: function(args) {
-      dom.budgeValueDOM.textContent = args.budget;
-      dom.incomeValueDOM.textContent = args.income;
-      dom.expenseValueDOM.textContent = args.expense;
-      dom.expensePercentageDOM.textContent = args.expensePercentage;
+      dom.budgeValueDOM.textContent = numberFormatter(args.budget);
+      dom.incomeValueDOM.textContent = numberFormatter(args.income);
+      dom.expenseValueDOM.textContent = numberFormatter(args.expense);
+      dom.expensePercentageDOM.textContent = percentageFormatter(
+        args.expensePercentage
+      );
     },
 
     displayMonth: function() {
@@ -193,7 +206,7 @@ const controller = ((uiController, budgetController) => {
         budget: 0,
         income: 0,
         expense: 0,
-        expensePercentage: "---"
+        expensePercentage: 0
       });
       uiController.displayMonth();
     }
