@@ -1,4 +1,4 @@
-// View module
+// ------------------ View module ----------------------
 const uiController = (() => {
   // DOM
   const dom = {
@@ -24,8 +24,9 @@ const uiController = (() => {
     }).format(number);
   }
 
-  function percentageFormatter(number) {
-    return `${Math.floor(number)}%`;
+  function percentageFormatter(divided, division) {
+    if (division < 1) return "---";
+    return `${Math.floor((divided / division) * 100)}%`;
   }
 
   // Exposed
@@ -33,11 +34,14 @@ const uiController = (() => {
     dom,
 
     displayBudget: function(args) {
-      dom.budgeValueDOM.textContent = numberFormatter(args.budget);
+      dom.budgeValueDOM.textContent = numberFormatter(
+        args.income - args.expense
+      );
       dom.incomeValueDOM.textContent = numberFormatter(args.income);
       dom.expenseValueDOM.textContent = numberFormatter(args.expense);
       dom.expensePercentageDOM.textContent = percentageFormatter(
-        args.expensePercentage
+        args.expense,
+        args.income
       );
     },
 
@@ -62,14 +66,15 @@ const uiController = (() => {
       },  ${today.getFullYear()}`;
     },
 
-    addItemlist: function(newItem) {
-      if (newItem.type === "inc") {
-        dom.incomeListDOM.insertAdjacentHTML(
-          "beforeend",
-          `<div class="item clearfix" id="income-${newItem.id}">
-          <div class="item__description">${newItem.description}</div>
+    displayItems: function(booking) {
+      booking.forEach(item => {
+        if (item.type === "inc") {
+          dom.incomeListDOM.insertAdjacentHTML(
+            "beforeend",
+            `<div class="item clearfix" id="income-${item.id}">
+          <div class="item__description">${item.description}</div>
           <div class="right clearfix">
-            <div class="item__value">+ ${numberFormatter(newItem.value)}</div>
+            <div class="item__value">+ ${numberFormatter(item.value)}</div>
             <div class="item__delete">
               <button class="item__delete--btn">
                 <i class="ion-ios-close-outline"></i>
@@ -77,36 +82,62 @@ const uiController = (() => {
             </div>
           </div>
         </div>`
-        );
-      } else if (newItem.type === "exp") {
-        dom.expenseListDOM.insertAdjacentHTML(
-          "beforeend",
-          `<div class="item clearfix" id="expense-${newItem.id}">
-          <div class="item__description">${newItem.description}</div>
+          );
+        } else if (item.type === "exp") {
+          const income = parseInt(
+            dom.incomeValueDOM.textContent.replace("￥", "")
+          );
+          dom.expenseListDOM.insertAdjacentHTML(
+            "beforeend",
+            `<div class="item clearfix" id="expense-${item.id}">
+          <div class="item__description">${item.description}</div>
           <div class="right clearfix">
-            <div class="item__value">- ${numberFormatter(newItem.value)}</div>
-            <div class="item__percentage">21%</div>
+            <div class="item__value">- ${numberFormatter(item.value)}</div>
+            <div class="item__percentage">${percentageFormatter(
+              item.value,
+              income
+            )}</div>
             <div class="item__delete">
               <button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button>
             </div>
           </div>
         </div>`
-        );
-      }
+          );
+        }
+      });
     },
 
-    deleteItem: function(target) {
-      target.parentNode.removeChild(target);
+    clearItems: function() {
+      [dom.incomeListDOM, dom.expenseListDOM].forEach(element => {
+        while (element.firstChild) {
+          element.removeChild(element.firstChild);
+        }
+      });
+    },
+
+    inputColorChange: function() {
+      console.log("inside");
+      const targetfields = [
+        dom.addTypeDOM,
+        dom.addDescriptionDOM,
+        dom.addValueDOM
+      ];
+      targetfields.forEach(target => {
+        target.classList.toggle("red-focus");
+      });
+      dom.addButtonDOM.classList.toggle("red");
     }
   };
 })();
 
-// Budget model
+// ---------------------- Budget model ------------------------
 const budgetController = (() => {
+  // Each items in booking
+  const booking = [];
   const Item = function(args) {
     this.id = lastID + 1;
     this.type = args.type;
-    this.value = args.value;
+    this.value = parseFloat(args.value);
     this.description = args.description;
     updateLastID();
   };
@@ -116,32 +147,24 @@ const budgetController = (() => {
     lastID++;
   }
 
-  const booking = [];
-  const financialData = {
-    budget: 0,
-    income: 0,
-    expense: 0,
-    expensePercentage: -1
-  };
-
   function calcurateFinancialData() {
     let income = 0;
     let expense = 0;
+
     booking.forEach(item => {
       item.type === "inc" ? (income += item.value) : (expense += item.value);
     });
 
-    financialData.income = income;
-    financialData.expense = expense;
-    financialData.budget = income - expense;
-    financialData.expensePercentage = (expense / income) * 100;
+    return {
+      income: income,
+      expense: expense
+    };
   }
 
   return {
     addToBooking: function(newInputs) {
       const newItem = new Item(newInputs);
       booking.push(newItem);
-      return newItem;
     },
 
     removeFromBooking: function(id) {
@@ -152,18 +175,17 @@ const budgetController = (() => {
     },
 
     getBudget: function() {
-      calcurateFinancialData();
+      const financialData = calcurateFinancialData();
       return financialData;
     },
 
-    test: {
-      booking,
-      financialData
+    getBooking: function() {
+      return booking;
     }
   };
 })();
 
-// Controller
+// ----------------- Controller -----------------------
 const controller = ((uiController, budgetController) => {
   const dom = uiController.dom;
 
@@ -172,14 +194,16 @@ const controller = ((uiController, budgetController) => {
     const newInputs = {
       type: dom.addTypeDOM.value,
       description: dom.addDescriptionDOM.value,
-      value: parseFloat(dom.addValueDOM.value)
+      value: dom.addValueDOM.value
     };
     // Calcurate and update budget
-    const newItem = budgetController.addToBooking(newInputs);
+    budgetController.addToBooking(newInputs);
     const budget = budgetController.getBudget();
     uiController.displayBudget(budget);
     // Update item list
-    uiController.addItemlist(newItem);
+    const booking = budgetController.getBooking();
+    uiController.clearItems();
+    uiController.displayItems(booking);
   });
 
   function deleteListItem(e) {
@@ -189,24 +213,27 @@ const controller = ((uiController, budgetController) => {
       budgetController.removeFromBooking(targetNode.id.split("-")[1]);
       const budget = budgetController.getBudget();
       uiController.displayBudget(budget);
-      // Removing the target item from UI
-      uiController.deleteItem(targetNode);
+      // Update item list
+      const booking = budgetController.getBooking();
+      uiController.clearItems();
+      uiController.displayItems(booking);
     }
   }
-
   // When delete button is clicked
   dom.incomeListDOM.addEventListener("click", e => deleteListItem(e));
   dom.expenseListDOM.addEventListener("click", e => deleteListItem(e));
+
+  dom.addTypeDOM.addEventListener("change", () => {
+    uiController.inputColorChange();
+  });
 
   return {
     // Initial display arragement
     init: function() {
       console.log("Initialized");
       uiController.displayBudget({
-        budget: 0,
         income: 0,
-        expense: 0,
-        expensePercentage: 0
+        expense: 0
       });
       uiController.displayMonth();
     }
