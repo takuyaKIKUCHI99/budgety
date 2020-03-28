@@ -169,8 +169,7 @@ const controller = ((uiController, budgetController) => {
     uiController.addItemlist(newItem);
   });
 
-  // When delete button is clicked
-  dom.incomeListDOM.addEventListener("click", e => {
+  function deleteListItem(e) {
     if (e.target.className === "ion-ios-close-outline") {
       // Calcurate budget and display them
       const targetNode = e.target.parentNode.parentNode.parentNode.parentNode;
@@ -180,7 +179,11 @@ const controller = ((uiController, budgetController) => {
       // Removing the target item from UI
       uiController.deleteItem(targetNode);
     }
-  });
+  }
+
+  // When delete button is clicked
+  dom.incomeListDOM.addEventListener("click", e => deleteListItem(e));
+  dom.expenseListDOM.addEventListener("click", e => deleteListItem(e));
 
   return {
     // Initial display arragement
