@@ -151,19 +151,16 @@ const uiController = (() => {
 const budgetController = (() => {
   // Array for each Item
   const booking = [];
+  let lastId = 0;
 
   // Creating new Item when input is submitted
-  const Item = function(args) {
-    this.id = lastID + 1;
-    this.type = args.type;
-    this.value = parseFloat(args.value);
-    this.description = args.description;
-    updateLastID();
-  };
-  // Incrementing ID
-  let lastID = 0;
-  function updateLastID() {
-    lastID++;
+  class Item {
+    constructor(args, id) {
+      this.id = id;
+      this.type = args.type;
+      this.value = parseFloat(args.value);
+      this.description = args.description;
+    }
   }
 
   // Returing total income and expense from items in booking
@@ -184,7 +181,8 @@ const budgetController = (() => {
   return {
     // Adding new Item to booking
     addToBooking: newInputs => {
-      const newItem = new Item(newInputs);
+      const newItem = new Item(newInputs, lastId + 1);
+      lastId++;
       booking.push(newItem);
     },
 
