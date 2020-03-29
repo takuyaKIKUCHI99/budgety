@@ -18,18 +18,18 @@ const uiController = (() => {
   };
 
   // Formatting in JPY
-  function moneyFormatter(number) {
+  const moneyFormatter = number => {
     return new Intl.NumberFormat("ja-JP", {
       style: "currency",
       currency: "JPY"
     }).format(number);
-  }
+  };
 
   // Formatting percentages
-  function percentageFormatter(divided, division) {
+  const percentageFormatter = (divided, division) => {
     if (division < 1) return "---";
     return `${Math.floor((divided / division) * 100)}%`;
-  }
+  };
 
   function clearItems() {
     [dom.incomeListDOM, dom.expenseListDOM].forEach(element => {
@@ -142,7 +142,7 @@ const uiController = (() => {
     clearInputs: function() {
       dom.addDescriptionDOM.value = "";
       dom.addValueDOM.value = "";
-      dom.addDescriptionDOM.focus();
+      dom.addTypeDOM.focus();
     }
   };
 })();
@@ -209,6 +209,7 @@ const controller = ((uiController, budgetController) => {
 
   // Event when Check button is clicked
   function addListItem() {
+    console.log("in");
     // Getting values from DOM input
     const newInputs = uiController.getInputs();
     if (!newInputs.description || !newInputs.value) return;
@@ -240,7 +241,7 @@ const controller = ((uiController, budgetController) => {
   // Add item
   dom.addButtonDOM.addEventListener("click", addListItem);
   window.addEventListener("keyup", e => {
-    if (e.keyCode === 13) addListItem;
+    if (e.keyCode === 13) addListItem();
   });
   // Delete item
   dom.incomeListDOM.addEventListener("click", e => deleteListItem(e));
