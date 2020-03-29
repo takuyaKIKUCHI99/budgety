@@ -31,18 +31,18 @@ const uiController = (() => {
     return `${Math.floor((divided / division) * 100)}%`;
   };
 
-  function clearItems() {
+  const clearItems = () => {
     [dom.incomeListDOM, dom.expenseListDOM].forEach(element => {
       while (element.firstChild) {
         element.removeChild(element.firstChild);
       }
     });
-  }
+  };
 
   return {
     getDOMstrings: () => dom,
     // Display financial data in top banner
-    displayBudget: function(args) {
+    displayBudget: args => {
       dom.budgetValueDOM.textContent = moneyFormatter(
         args.income - args.expense
       );
@@ -54,7 +54,7 @@ const uiController = (() => {
       );
     },
     // Display current month in top banner
-    displayMonth: function() {
+    displayMonth: () => {
       const today = new Date();
       const months = [
         "January",
@@ -75,7 +75,7 @@ const uiController = (() => {
       },  ${today.getFullYear()}`;
     },
     // Display each financial items
-    displayItems: function(booking) {
+    displayItems: booking => {
       // Clearing financial items first
       clearItems();
       booking.forEach(item => {
@@ -118,7 +118,7 @@ const uiController = (() => {
       });
     },
     // Changing input color between income and expense
-    inputColorChange: function() {
+    inputColorChange: () => {
       const targetfields = [
         dom.addTypeDOM,
         dom.addDescriptionDOM,
@@ -131,7 +131,7 @@ const uiController = (() => {
     },
 
     // Get inputs values
-    getInputs: function() {
+    getInputs: () => {
       return {
         type: dom.addTypeDOM.value,
         description: dom.addDescriptionDOM.value,
@@ -139,7 +139,7 @@ const uiController = (() => {
       };
     },
 
-    clearInputs: function() {
+    clearInputs: () => {
       dom.addDescriptionDOM.value = "";
       dom.addValueDOM.value = "";
       dom.addTypeDOM.focus();
@@ -167,7 +167,7 @@ const budgetController = (() => {
   }
 
   // Returing total income and expense from items in booking
-  function calcuratingTotals() {
+  const calcuratingTotals = () => {
     let income = 0;
     let expense = 0;
 
@@ -179,17 +179,17 @@ const budgetController = (() => {
       income: income,
       expense: expense
     };
-  }
+  };
 
   return {
     // Adding new Item to booking
-    addToBooking: function(newInputs) {
+    addToBooking: newInputs => {
       const newItem = new Item(newInputs);
       booking.push(newItem);
     },
 
     // Removing Item from booking
-    removeFromBooking: function(id) {
+    removeFromBooking: id => {
       const index = booking.findIndex(item => {
         return item.id === parseInt(id);
       });
@@ -208,8 +208,7 @@ const controller = ((uiController, budgetController) => {
   const dom = uiController.getDOMstrings();
 
   // Event when Check button is clicked
-  function addListItem() {
-    console.log("in");
+  const addListItem = () => {
     // Getting values from DOM input
     const newInputs = uiController.getInputs();
     if (!newInputs.description || !newInputs.value) return;
@@ -222,9 +221,9 @@ const controller = ((uiController, budgetController) => {
     uiController.displayItems(booking);
     // Clearing input fields
     uiController.clearInputs();
-  }
+  };
 
-  function deleteListItem(e) {
+  const deleteListItem = e => {
     if (e.target.className === "ion-ios-close-outline") {
       // Calcurate budget and display them
       const targetNode = e.target.parentNode.parentNode.parentNode.parentNode;
@@ -235,7 +234,7 @@ const controller = ((uiController, budgetController) => {
       const booking = budgetController.getBooking();
       uiController.displayItems(booking);
     }
-  }
+  };
 
   // Event listner
   // Add item
@@ -253,7 +252,7 @@ const controller = ((uiController, budgetController) => {
 
   return {
     // Initial display arragement
-    init: function() {
+    init: () => {
       console.log("Initialized");
       uiController.displayBudget({
         income: 0,
